@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>任务详情 - 校小易</title>
+<style>
+:root{--ink:#1d1d1f;--muted:#86868b;--line:#e5e5ea;--paper:#fff;--bg:#f5f5f7;--blue:#007aff;--blue-soft:#f0f7ff;--green:#34c759;--orange:#ff9500;--red:#ff3b30}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink)}
+button{font:inherit}
+.app{max-width:430px;min-height:100vh;margin:auto;background:var(--paper);padding-bottom:90px}
+.top{height:66px;display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.back{width:38px;height:38px;border:1px solid var(--line);border-radius:11px;background:#fff;font-size:23px}
+.top h1{font-size:18px;margin:0}
+.content{padding:16px}
+.status{padding:16px;border-radius:17px;background:#edf9f2;border:1px solid #ccefd9;color:#23885c;margin-bottom:12px}
+.status strong{display:block;font-size:17px;margin-bottom:5px}
+.status span{font-size:11px;color:#5b8d72}
+.card{border:1px solid var(--line);border-radius:18px;padding:17px;background:#fff;box-shadow:0 4px 14px rgba(36,54,72,.04)}
+.badge{display:inline-block;padding:4px 7px;border-radius:5px;background:#fff0f0;color:var(--red);font-size:10px;font-weight:700}
+h2{font-size:19px;line-height:1.4;margin:10px 0 16px}
+.price{color:var(--orange);font-weight:700;font-size:14px}
+.info{display:grid;gap:14px;border-top:1px solid var(--line);padding-top:14px}
+.info-row{display:flex;gap:10px}
+.info-row b{width:52px;flex:0 0 52px;color:var(--muted);font-size:11px;font-weight:400}
+.info-row span{font-size:13px;line-height:1.45}
+.detail{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.detail h3{font-size:13px;margin:0 0 8px}
+.detail p{font-size:12px;line-height:1.7;color:#5f6871;margin:0;white-space:pre-wrap}
+.action{width:100%;margin-top:16px;border:0;border-radius:14px;padding:14px;background:var(--blue);color:#fff;font-size:15px;font-weight:700}
+.action.success{background:#dfe7f5;color:#788598}
+.empty{text-align:center;color:var(--muted);padding:60px 15px;font-size:13px}
+.bottom{position:fixed;z-index:8;left:50%;transform:translateX(-50%);bottom:0;width:min(100%,430px);height:76px;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(229,229,234,.9);display:flex;justify-content:space-around;align-items:center;padding:7px 54px 8px}
+.nav-item,.nav-add{border:0;background:none;color:var(--muted);font-size:10px;text-decoration:none;text-align:center;line-height:1.2;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:42px}
+.nav-item.active{color:var(--blue);font-weight:700}
+.nav-item svg{width:21px;height:21px;display:block;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav-add{width:48px;height:48px;min-width:48px;justify-content:center;border-radius:50%;background:var(--blue);color:#fff;box-shadow:0 6px 18px rgba(0,122,255,.28);margin-top:-19px;border:4px solid var(--paper)}
+.nav-add svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round}
+</style>
+</head>
+<body>
+<main class="app">
+<header class="top"><button class="back" id="back" type="button">‹</button><h1>任务详情</h1></header>
+<section class="content" id="content"></section>
+<nav class="bottom" aria-label="主导航"><a class="nav-item active" href="index.html" aria-label="首页"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.8 12 3.9l8.5 6.9v8.1a1.2 1.2 0 0 1-1.2 1.2H4.7a1.2 1.2 0 0 1-1.2-1.2z"/><path d="M9.3 20.1v-5.8h5.4v5.8"/></svg><span>首页</span></a><a class="nav-add" href="publish.html" aria-label="发布"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></a><a class="nav-item" href="profile.html" aria-label="我的"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.2"/><path d="M5.2 20c.9-3.3 3.1-5 6.8-5s5.9 1.7 6.8 5"/></svg><span>我的</span></a></nav>
+</main>
+<script src="api.js"></script>
+<script>
+const content=document.querySelector('#content');
+function esc(value){return String(value==null?'':value).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]})}
+function postKey(post){return post.createdAt||[post.category,post.subcategory,post.title,post.place,post.time].join('|')}
+function readClaimed(){try{return JSON.parse(localStorage.getItem('campus_claimed_tasks')||'[]')}catch{return[]}}
+function amountText(raw){raw=String(raw||'').trim();if(!raw||raw==='面议')return '面议';if(raw==='0'||raw==='免费')return '免费';if(/[元￥¥]/.test(raw))return raw;if(raw.includes('/')){const parts=raw.split('/');return parts[0]+'元/'+parts.slice(1).join('/')}return raw+'元'}
+function priceText(post){const amount=amountText(post.price);if(post.category==='拼车')return '';if(post.category==='租借')return amount==='面议'?'租金面议':'租金 '+amount;if(post.category==='票券')return amount==='面议'?'价格面议':'价格 '+amount;return amount==='面议'?'酬金面议':'酬金 '+amount}
+function actionText(post){if(post.category==='拼车')return '加入';if(post.category==='租借')return post.intent==='offer'?'租用':'联系';if(post.category==='票券')return '联系';if(post.category==='信息差')return '回复';if(post.category==='捎物')return '帮捎';return post.intent==='offer'?'联系':'抢单'}
+async function render(){
+  let post=null;
+  const taskId=new URLSearchParams(location.search).get('id');
+  if(taskId){try{post=await AppAPI.getPost(taskId)}catch{}}
+  if(!post){try{post=JSON.parse(localStorage.getItem('campus_selected_task')||'null')}catch{}}
+  if(!post){content.innerHTML='<div class="empty">暂时没有任务详情<br><br><button class="action" id="emptyBack">返回首页</button></div>';document.querySelector('#emptyBack').onclick=()=>location.href='index.html';return}
+  const claimed=post.claimed===true||readClaimed().some(function(item){return postKey(item)===postKey(post)});
+  const action=actionText(post),done='已'+action;
+  const extra=post.extra||{};
+  const detail=post.detail||'暂无补充说明';
+  content.innerHTML=(claimed?'<div class="status"><strong>'+esc(action)+'成功！</strong><span>请尽快联系发布者确认细节。</span></div>':'')+
+    '<article class="card">'+
+    '<span class="badge">'+(post.intent==='seek'?'急需':'可提供')+'</span>'+
+    '<h2>'+esc(post.title||post.subcategory||post.category)+(priceText(post)?' <span class="price">'+esc(priceText(post))+'</span>':'')+'</h2>'+
+    '<div class="info">'+
+    '<div class="info-row"><b>任务类型</b><span>'+esc(post.category)+' · '+esc(post.subcategory||'')+'</span></div>'+
+    '<div class="info-row"><b>地点</b><span>'+esc(post.place||'校内交接')+'</span></div>'+
+    '<div class="info-row"><b>时间</b><span>'+esc(post.time||'时间待定')+'</span></div>'+
+    (extra.order?'<div class="info-row"><b>取货信息</b><span>'+esc(extra.order)+'</span></div>':'')+
+    '</div>'+
+    '<div class="detail"><h3>任务说明</h3><p>'+esc(detail)+'</p></div>'+
+    (post.contact?'<div class="detail"><h3>联系方式</h3><p>'+esc(post.contact)+'</p></div>':'')+
+    '<button class="action '+(claimed?'success':'')+'" id="claim" type="button">'+(claimed?esc(done):esc(action))+'</button>'+
+    '</article>';
+  document.querySelector('#claim').onclick=async function(){
+    try{
+      if(post.id)await AppAPI.claimPost(post.id);
+      const claimedTasks=readClaimed();
+      if(!claimedTasks.some(function(item){return postKey(item)===postKey(post)}))claimedTasks.unshift(Object.assign({},post,{claimedAt:Date.now()}));
+      localStorage.setItem('campus_claimed_tasks',JSON.stringify(claimedTasks));
+      render();
+    }catch(error){window.alert(error.message||action+'失败，请稍后重试')}
+  };
+}
+document.querySelector('#back').onclick=()=>location.href='index.html';
+render();
+</script>
+</body>
+</html>
