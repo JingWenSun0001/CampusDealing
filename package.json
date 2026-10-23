@@ -1,0 +1,14 @@
+{
+  "name": "school-exchanger",
+  "version": "1.0.0",
+  "private": true,
+  "description": "校小易校园互助平台",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

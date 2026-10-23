@@ -17,9 +17,32 @@ CampusDealing 只服务于单一校园，优先解决不值得邮寄、需要快
 - 独立“我的”页面
 - 用户公开身份信息：姓名、学号、宿舍楼和宿舍号
 
-## 本地预览
+## 本地运行
 
-直接打开 `dist/index.html` 即可预览。首页底部的“我的”会进入 `dist/profile.html`。
+项目现在使用 Node.js + SQLite 后端，不再依赖浏览器 `localStorage` 作为主数据源。
+
+在项目根目录运行：
+
+```powershell
+node server.js
+```
+
+也可以使用 npm 启动：
+
+```powershell
+npm start
+```
+
+然后打开 <http://127.0.0.1:8000>。数据库会自动创建在 `data/campus.db`，首次启动会写入 3 条示例任务。
+
+主要接口：
+
+- `GET /api/posts`：任务列表，支持 `category` 和 `q` 筛选
+- `POST /api/posts`：发布任务
+- `GET /api/posts/:id`：任务详情
+- `POST /api/posts/:id/claim`：抢单
+- `GET /api/me`：个人资料和统计
+- `PUT /api/profile`：保存个人资料
 
 ## 下一阶段
 
@@ -27,7 +50,12 @@ CampusDealing 只服务于单一校园，优先解决不值得邮寄、需要快
 2. 接入商品/求购/租借数据存储
 3. 实现发布内容的 AI 自动分类
 4. 增加举报、过期、下架和管理员审核
-5. 部署在线预览并邀请首批校园用户试用
+5. 将 SQLite 迁移到托管 PostgreSQL
+6. 部署免费公网测试版并邀请首批校园用户试用
+
+## 免费部署说明
+
+项目已补充 `render.yaml`，可以用于创建免费的 Node.js 测试服务。当前版本仍使用 SQLite；免费实例可能休眠或重建，因此数据库迁移到 PostgreSQL 之前只适合演示，不适合保存真实用户数据。
 
 ## 设计原则
 
