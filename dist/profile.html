@@ -1,1 +1,53 @@
-<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>我的 · 校小易</title><style>*{box-sizing:border-box}body{margin:0;background:#eef2ef;font-family:Arial,"Microsoft YaHei",sans-serif;color:#14211b}.page{max-width:430px;min-height:100vh;margin:auto;background:#f7f8f6;padding:20px 16px}.top{display:flex;align-items:center;gap:12px;margin-bottom:22px}.back,.edit{border:0;background:#fff;border-radius:12px;width:38px;height:38px;font-size:20px}.edit{margin-left:auto;font-size:12px;color:#236b4d;width:auto;padding:0 13px}.avatar{width:64px;height:64px;border-radius:50%;background:#dff0e6;color:#236b4d;display:grid;place-items:center;font-size:24px;font-weight:900;cursor:pointer}.head{display:flex;align-items:center;gap:14px;margin-bottom:18px}.head small{display:block;color:#7d8983;margin-top:6px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#fff;border:1px solid #e8ece9;border-radius:16px;padding:16px 8px;text-align:center}.stat b{display:block;font-size:20px;color:#236b4d}.stat span{display:block;color:#7d8983;font-size:11px;margin-top:7px}.card{background:#fff;border:1px solid #e8ece9;border-radius:18px;margin-top:14px;padding:16px}.card h2{font-size:15px;margin:0 0 8px}.line{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #e8ece9;font-size:13px}.line:last-child{border:0}.muted{color:#7d8983}.line input{border:1px solid #dce7df;border-radius:8px;padding:7px;text-align:right;width:150px;font:inherit;font-size:13px}.save{display:none;width:100%;border:0;background:#236b4d;color:#fff;border-radius:10px;padding:10px;margin-top:10px}</style><main class="page"><div class="top"><button class="back" onclick="location.href='index.html'">‹</button><button class="edit" id="edit">编辑资料</button></div><section class="head"><div class="avatar" id="avatar">林</div><div><b>我的</b><small>点击头像可更换</small></div></section><section class="stats"><div class="stat"><b>3</b><span>正在出售</span></div><div class="stat"><b>1</b><span>正在寻求</span></div><div class="stat"><b>8</b><span>交易达成</span></div></section><section class="card"><h2>我的信息</h2><div class="line"><span class="muted">姓名</span><input value="林同学" disabled></div><div class="line"><span class="muted">学号</span><input value="20****018" disabled></div><div class="line"><span class="muted">宿舍</span><input value="3号楼 521" disabled></div><button class="save" id="save">保存信息</button></section></main><script>const edit=document.querySelector('#edit'),save=document.querySelector('#save'),inputs=document.querySelectorAll('input');edit.onclick=()=>{inputs.forEach(i=>i.disabled=false);save.style.display='block';edit.style.display='none'};save.onclick=()=>{inputs.forEach(i=>i.disabled=true);save.style.display='none';edit.style.display='block'};document.querySelector('#avatar').onclick=()=>alert('头像更换功能将在登录后开放');</script>
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>我的 - 校小易</title>
+  <style>
+    :root{--bg:#eceae7;--paper:#faf9f7;--ink:#222;--muted:#8c8b88;--line:#e7e4df;--accent:#5c63f2;--green:#237454}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+    .page{width:min(100%,538px);min-height:100vh;margin:auto;padding:24px 20px 44px;background:var(--paper)}
+    .top{height:50px;display:flex;align-items:center;justify-content:space-between;margin-bottom:26px}.top h1{font-size:22px;margin:0}.back,.edit{border:0;background:#fff;border-radius:16px;height:48px;padding:0 17px;color:var(--green);font-size:16px;cursor:pointer}.back{width:48px;padding:0;font-size:28px;line-height:1;color:var(--ink)}
+    .head{display:flex;align-items:center;margin:0 0 24px 2px}.avatar{width:80px;height:80px;border-radius:50%;display:grid;place-items:center;background:#dff1e9;color:var(--green);font-size:34px;font-weight:700}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}.stat{min-height:98px;border:1px solid var(--line);border-radius:18px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center}.stat b{font-size:25px;color:var(--green);line-height:1.2}.stat span{margin-top:8px;color:#777;font-size:14px}
+    .card{border:1px solid var(--line);border-radius:20px;background:#fff}.link-card{width:100%;padding:21px 20px;display:flex;align-items:center;justify-content:space-between;text-align:left;font-size:18px;cursor:pointer}.link-card span{font-size:27px;color:#aaa}.info-view{display:none}.info-view.show{display:block}.info-card{padding:7px 20px 8px}.line{min-height:68px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);gap:20px}.line:last-child{border-bottom:0}.line label{color:#777;white-space:nowrap}.line input{width:190px;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--ink);font:inherit;text-align:right;padding:10px 8px;outline:none}.line input:disabled{opacity:1}.line input.editing{border-color:#cbd5d0;background:#fbfdfc}.save{display:none;width:100%;margin-top:16px;border:0;border-radius:14px;background:var(--accent);color:#fff;padding:14px;font-size:16px;cursor:pointer}.save.show{display:block}.tip{margin:16px 4px 0;color:var(--muted);font-size:13px}
+    @media(max-width:370px){.page{padding-left:14px;padding-right:14px}.stat span{font-size:13px}.line input{width:170px}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section id="overview">
+      <header class="top"><button class="back" id="homeBack" aria-label="返回首页">‹</button><button class="edit" id="editTop">编辑资料</button></header>
+      <div class="head"><div class="avatar" aria-label="用户头像">林</div></div>
+      <div class="stats" aria-label="交易状态">
+        <div class="stat"><b>3</b><span>正在出售</span></div>
+        <div class="stat"><b>1</b><span>正在寻求</span></div>
+        <div class="stat"><b>8</b><span>交易已成</span></div>
+      </div>
+      <button class="card link-card" id="infoCard"><b>我的信息</b><span>›</span></button>
+    </section>
+
+    <section class="info-view" id="infoView">
+      <header class="top"><button class="back" id="infoBack" aria-label="返回我的">‹</button><h1>我的信息</h1><button class="edit" id="editInfo">编辑</button></header>
+      <div class="card info-card">
+        <div class="line"><label for="name">姓名</label><input id="name" value="林同学" disabled /></div>
+        <div class="line"><label for="studentId">学号</label><input id="studentId" value="20****018" disabled /></div>
+        <div class="line"><label for="building">宿舍楼</label><input id="building" value="3号楼" disabled /></div>
+        <div class="line"><label for="room">宿舍号</label><input id="room" value="521" disabled /></div>
+      </div>
+      <p class="tip">个人信息仅用于校内交易确认</p>
+      <button class="save" id="saveInfo">保存信息</button>
+    </section>
+  </main>
+  <script>
+    const overview=document.getElementById('overview'),infoView=document.getElementById('infoView');
+    const inputs=[...infoView.querySelectorAll('input')],editInfo=document.getElementById('editInfo'),saveInfo=document.getElementById('saveInfo');
+    function showInfo(){overview.style.display='none';infoView.classList.add('show')}
+    function showOverview(){infoView.classList.remove('show');overview.style.display='block'}
+    function startEdit(){inputs.forEach(input=>{input.disabled=false;input.classList.add('editing')});editInfo.style.display='none';saveInfo.classList.add('show');inputs[0].focus()}
+    function finishEdit(){inputs.forEach(input=>{input.disabled=true;input.classList.remove('editing')});editInfo.style.display='';saveInfo.classList.remove('show')}
+    document.getElementById('homeBack').onclick=()=>location.href='index.html';document.getElementById('infoCard').onclick=showInfo;document.getElementById('editTop').onclick=showInfo;document.getElementById('infoBack').onclick=showOverview;editInfo.onclick=startEdit;saveInfo.onclick=finishEdit;
+  </script>
+</body>
+</html>
