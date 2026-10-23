@@ -18,7 +18,7 @@
 <body>
   <main class="page">
     <section id="overview">
-      <header class="top"><button class="back" id="homeBack" aria-label="返回首页">‹</button><button class="edit" id="editTop">编辑资料</button></header>
+      <header class="top"><button class="back" id="homeBack" aria-label="返回首页">‹</button></header>
       <div class="head"><div class="avatar" aria-label="用户头像">林</div></div>
       <div class="stats" aria-label="交易状态">
         <div class="stat"><b>3</b><span>正在出售</span></div>
@@ -29,14 +29,13 @@
     </section>
 
     <section class="info-view" id="infoView">
-      <header class="top"><button class="back" id="infoBack" aria-label="返回我的">‹</button><h1>我的信息</h1><button class="edit" id="editInfo">编辑</button></header>
+      <header class="top"><button class="back" id="infoBack" aria-label="返回我的">‹</button><button class="edit" id="editInfo">编辑</button></header>
       <div class="card info-card">
         <div class="line"><label for="name">姓名</label><input id="name" value="林同学" disabled /></div>
         <div class="line"><label for="studentId">学号</label><input id="studentId" value="20****018" disabled /></div>
         <div class="line"><label for="building">宿舍楼</label><input id="building" value="3号楼" disabled /></div>
         <div class="line"><label for="room">宿舍号</label><input id="room" value="521" disabled /></div>
       </div>
-      <p class="tip">个人信息仅用于校内交易确认</p>
       <button class="save" id="saveInfo">保存信息</button>
     </section>
   </main>
@@ -47,7 +46,7 @@
     function showOverview(){infoView.classList.remove('show');overview.style.display='block'}
     function startEdit(){inputs.forEach(input=>{input.disabled=false;input.classList.add('editing')});editInfo.style.display='none';saveInfo.classList.add('show');inputs[0].focus()}
     function finishEdit(){inputs.forEach(input=>{input.disabled=true;input.classList.remove('editing')});editInfo.style.display='';saveInfo.classList.remove('show')}
-    document.getElementById('homeBack').onclick=()=>location.href='index.html';document.getElementById('infoCard').onclick=showInfo;document.getElementById('editTop').onclick=showInfo;document.getElementById('infoBack').onclick=showOverview;editInfo.onclick=startEdit;saveInfo.onclick=finishEdit;
+    document.getElementById('homeBack').onclick=()=>location.href='index.html';document.getElementById('infoCard').onclick=showInfo;document.getElementById('infoBack').onclick=showOverview;editInfo.onclick=startEdit;saveInfo.onclick=finishEdit;
   </script>
 </body>
 </html>
