@@ -6,29 +6,42 @@
   <title>发布信息 - 校小易</title>
   <style>
     :root{--bg:#eceae7;--paper:#faf9f7;--ink:#282826;--muted:#8b8983;--line:#e8e4de;--accent:#5c63f2}
-    *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Arial,"Microsoft YaHei",sans-serif;color:var(--ink)}.page{width:min(100%,538px);min-height:100vh;margin:auto;padding:20px;background:var(--paper)}.top{display:flex;align-items:center;gap:12px;margin-bottom:22px}.back{width:40px;height:40px;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:24px}.top h1{font-size:22px;margin:0}.form{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px}.field{display:block;margin-bottom:16px}.field:last-child{margin-bottom:0}.field span{display:block;color:var(--muted);font-size:13px;margin-bottom:7px}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px;font:inherit;outline:none;background:#fff;color:var(--ink)}.field textarea{min-height:100px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.submit{width:100%;margin-top:18px;padding:14px;border:0;border-radius:13px;background:var(--accent);color:#fff;font-size:16px}.error{min-height:20px;color:#d85d4c;font-size:13px;margin:12px 2px 0}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Arial,"Microsoft YaHei",sans-serif;color:var(--ink)}.page{width:min(100%,538px);min-height:100vh;margin:auto;padding:20px;background:var(--paper)}.top{display:flex;align-items:center;gap:12px;margin-bottom:22px}.back{width:40px;height:40px;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:24px}.top h1{font-size:22px;margin:0}.form{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px}.field{display:block;margin-bottom:16px}.field span{display:block;color:var(--muted);font-size:13px;margin-bottom:7px}.field input,.field select{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px;font:inherit;outline:none;background:#fff;color:var(--ink)}.field input:focus,.field select:focus{border-color:var(--accent)}.intent{margin:2px 0 18px}.intent-title{display:block;color:var(--muted);font-size:13px;margin-bottom:8px}.intent-options{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.intent-options label{position:relative}.intent-options input{position:absolute;opacity:0}.intent-options span{display:block;text-align:center;border:1px solid var(--line);border-radius:10px;padding:10px 4px;font-size:13px;color:#666}.intent-options input:checked+span{border-color:var(--accent);background:#f0f1ff;color:var(--accent);font-weight:700}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.hidden{display:none!important}.submit{width:100%;margin-top:5px;padding:14px;border:0;border-radius:13px;background:var(--accent);color:#fff;font-size:16px}.error{min-height:20px;color:#d85d4c;font-size:13px;margin:2px 2px 8px}
   </style>
 </head>
 <body>
   <main class="page">
     <header class="top"><button class="back" id="back" aria-label="返回">‹</button><h1>发布信息</h1></header>
     <form class="form" id="publishForm">
-      <label class="field"><span>类型</span><select id="category" required></select></label>
-      <label class="field"><span>具体项目</span><select id="subcategory" required></select></label>
-      <label class="field"><span>一句话说明</span><input id="title" maxlength="40" placeholder="例如：周末电动车出租，电量足" required /></label>
-      <label class="field"><span>详细说明</span><textarea id="detail" maxlength="300" placeholder="写清楚物品状况、交易方式等" required></textarea></label>
-      <div class="row"><label class="field"><span>价格（元）</span><input id="price" type="number" min="0" step="0.01" placeholder="免费可填 0" required /></label><label class="field"><span>地点</span><input id="place" maxlength="30" placeholder="例如：东门" required /></label></div>
-      <label class="field"><span>可取时间</span><input id="time" maxlength="40" placeholder="例如：今天 18:00 后" required /></label>
+      <select id="category" aria-label="选择类型" required></select>
+      <select id="subcategory" aria-label="选择具体项目" required></select>
+      <div class="intent">
+        <span class="intent-title">你想发布什么</span>
+        <div class="intent-options">
+          <label><input type="radio" name="intent" value="seek"><span>我需要帮助</span></label>
+          <label><input type="radio" name="intent" value="offer"><span>我可以提供</span></label>
+          <label><input type="radio" name="intent" value="sell"><span>出售 / 出租</span></label>
+        </div>
+      </div>
+      <label class="field"><span id="summaryLabel">你需要什么帮助？</span><input id="summary" maxlength="60" placeholder="例如：想找周末去新乡东站的同学" required /></label>
+      <div class="row">
+        <label class="field" id="priceWrap"><span>约定价格（元，可选）</span><input id="price" type="number" min="0" step="0.01" placeholder="不填表示面议" /></label>
+        <label class="field" id="placeWrap"><span id="placeLabel">交接地点</span><input id="place" maxlength="40" placeholder="例如：东门" /></label>
+      </div>
+      <label class="field"><span id="timeLabel">希望时间</span><input id="time" maxlength="40" placeholder="例如：今天 18:00 后" required /></label>
       <div class="error" id="error"></div><button class="submit" type="submit">发布信息</button>
     </form>
   </main>
   <script>
     const defs=[['租借',['电动车','大疆','iPhone','账号']],['拼车',['新乡东站','新乡站','考点','宝龙','大胖 / 二胖 / 三胖','其他']],['代取',['外卖','快递','饭来','印务','茶饮','小东小西']],['代买',['校外','超市','宝龙','胖东来']],['票券',['奶茶','餐食','健身房','演唱会']],['服务',['洗衣','妆造','摄像','陪练','找书']],['捎物',['假条','充电器','文件']],['信息差',['电话 / 微信','考试信息']]];
-    const category=document.querySelector('#category'),subcategory=document.querySelector('#subcategory');
+    const category=document.querySelector('#category'),subcategory=document.querySelector('#subcategory'),summary=document.querySelector('#summary'),summaryLabel=document.querySelector('#summaryLabel'),priceWrap=document.querySelector('#priceWrap'),placeWrap=document.querySelector('#placeWrap'),placeLabel=document.querySelector('#placeLabel'),timeLabel=document.querySelector('#timeLabel'),price=document.querySelector('#price'),place=document.querySelector('#place'),time=document.querySelector('#time'),error=document.querySelector('#error');
+    const defaults={租借:'offer',拼车:'seek',代取:'seek',代买:'seek',票券:'seek',服务:'offer',捎物:'seek',信息差:'seek'};
     category.innerHTML=defs.map(d=>`<option value="${d[0]}">${d[0]}</option>`).join('');
-    function updateSub(){const d=defs.find(x=>x[0]===category.value);subcategory.innerHTML=d[1].map(x=>`<option value="${x}">${x}</option>`).join('')}
-    category.onchange=updateSub;updateSub();document.querySelector('#back').onclick=()=>location.href='index.html';
-    document.querySelector('#publishForm').onsubmit=e=>{e.preventDefault();const data={category:category.value,subcategory:subcategory.value,title:title.value.trim(),detail:detail.value.trim(),price:price.value,place:place.value.trim(),time:time.value.trim(),createdAt:Date.now()};if(!data.title||!data.detail||!data.place||!data.time){error.textContent='请把信息填写完整';return}const posts=JSON.parse(localStorage.getItem('campus_posts')||'[]');posts.unshift(data);localStorage.setItem('campus_posts',JSON.stringify(posts));location.href='index.html'};
+    function updateSub(){const d=defs.find(x=>x[0]===category.value);subcategory.innerHTML=d[1].map(x=>`<option value="${x}">${x}</option>`).join('');setDefaultIntent();updateFields()}
+    function setDefaultIntent(){const selected=document.querySelector(`input[name="intent"][value="${defaults[category.value]||'seek'}"]`);selected.checked=true}
+    function updateFields(){const intent=document.querySelector('input[name="intent"]:checked').value;const isSeek=intent==='seek',isSell=intent==='sell';summaryLabel.textContent=isSeek?'你需要什么帮助？':isSell?'你想出售 / 出租什么？':'你想提供什么服务？';summary.placeholder=isSeek?'例如：想找周末去新乡东站的同学':isSell?'例如：九成新电动车，校内可看车':'例如：可帮忙代取东门外卖';timeLabel.textContent=isSeek?'希望时间':isSell?'可交易时间':'可提供时间';time.placeholder=isSeek?'例如：今天 18:00 后':isSell?'例如：工作日晚上':'例如：今天 18:00 后';placeWrap.classList.toggle('hidden',category.value==='信息差');placeLabel.textContent=category.value==='拼车'?'出发地 / 目的地':isSeek?'希望地点':isSell?'交接地点':'服务地点';place.placeholder=category.value==='拼车'?'例如：新乡东站 → 学校':isSeek?'例如：东门附近':'例如：东门';priceWrap.classList.toggle('hidden',!(isSell||category.value==='租借'&&intent==='offer'));price.required=false}
+    category.onchange=updateSub;document.querySelectorAll('input[name="intent"]').forEach(input=>input.onchange=updateFields);updateSub();document.querySelector('#back').onclick=()=>location.href='index.html';
+    document.querySelector('#publishForm').onsubmit=e=>{e.preventDefault();const intent=document.querySelector('input[name="intent"]:checked').value;const data={category:category.value,subcategory:subcategory.value,intent,title:summary.value.trim(),detail:'',price:price.value,place:place.value.trim(),time:time.value.trim(),createdAt:Date.now()};if(!data.title||!data.time||(placeWrap.classList.contains('hidden')===false&&!data.place)){error.textContent='请把必填信息填写完整';return}const posts=JSON.parse(localStorage.getItem('campus_posts')||'[]');posts.unshift(data);localStorage.setItem('campus_posts',JSON.stringify(posts));location.href='index.html'};
   </script>
 </body>
 </html>
