@@ -1,4 +1,4 @@
 data/*.db
 data/*.db-*
 __pycache__/
-dist/campus-map.jpg
+miniprogram/project.private.config.json
