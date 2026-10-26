@@ -1,0 +1,22 @@
+<template name="post-row">
+  <view class="board-task" data-id="{{post.id}}" bindtap="openDetail">
+    <view class="task-thumb {{post.isGoods ? 'warm' : ''}}">
+      <image wx:if="{{post.cover}}" class="thumb-photo" src="{{post.cover}}" mode="aspectFill"/>
+      <image wx:else class="thumb-icon" src="{{post.categoryIcon}}" mode="aspectFit"/>
+    </view>
+    <view class="task-main">
+      <view class="task-tag-row"><text class="board-tag {{post.isGoods ? 'warm' : ''}}">{{post.category}}</text><text class="board-state {{post.stateTone}}">{{post.stateLabel}}</text></view>
+      <text class="board-task-title">{{post.title || post.subcategory}}</text>
+      <view class="board-meta"><text wx:if="{{post.timeLabel}}" class="meta-time">{{post.timeLabel}}</text><text class="meta-place">{{post.placeLabel}}</text></view>
+    </view>
+    <view class="task-side"><text wx:if="{{post.priceLabel}}" class="row-price {{post.isFreeGive ? 'free' : ''}}">{{post.priceLabel}}</text><text wx:if="{{post.countText}}" class="row-count">{{post.countText}}</text><text class="side-arrow">›</text></view>
+  </view>
+</template>
+<template name="bottom-nav">
+  <view class="nav">
+    <navigator class="nav-item {{active === 'home' ? 'active' : ''}}" url="/pages/index/index" open-type="reLaunch"><text class="nav-icon nav-home"></text><text>首页</text></navigator>
+    <view wx:if="{{active === 'publish'}}" class="nav-publish active"><text class="nav-add">＋</text><text>发布</text></view>
+    <navigator wx:else class="nav-publish" url="/pages/publish/publish"><text class="nav-add">＋</text><text>发布</text></navigator>
+    <navigator class="nav-item {{active === 'profile' ? 'active' : ''}}" url="/pages/profile/profile" open-type="reLaunch"><text class="nav-icon nav-profile"></text><text>我的</text></navigator>
+  </view>
+</template>

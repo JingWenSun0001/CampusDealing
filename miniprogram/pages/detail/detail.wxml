@@ -1,1 +1,46 @@
-<view class="page"><view class="head-row"><button class="back" bindtap="back">‹</button></view><view class="card" wx:if="{{post}}"><text class="detail-kicker">任务详情</text><view class="task-top"><text class="badge {{post.intent === 'offer' ? 'offer' : ''}}">{{post.intent === 'offer' ? '可提供' : '求帮助'}}</text><text class="status {{post.status}}">{{post.status === 'completed' ? '已完成' : (post.status === 'cancelled' ? '已删除' : (post.claimed ? '进行中' : '待响应'))}}</text><text class="price" wx:if="{{priceText}}">{{priceText}}</text></view><text class="detail-title">{{post.title || post.subcategory || post.category}}</text><text class="detail-label">单内容</text><view class="detail-body">{{post.detail || '暂无补充说明'}}</view><view class="info-line"><text>类型</text><text>{{post.category}} · {{post.subcategory}}</text></view><view class="info-line"><text>地点</text><text>{{post.place || '校内交接'}}</text></view><view class="info-line"><text>时间</text><text>{{post.time || '时间待定'}}</text></view><view class="info-line"><text>单主</text><text>{{post.ownerName || '校园同学'}}</text></view><view class="contact-box" wx:if="{{post.isOwner || post.claimedByMe}}"><text class="label">联系方式</text><text>{{post.contact || '发布者暂未填写'}}</text></view><button wx:if="{{!post.isOwner && post.status === 'active'}}" class="primary detail-action {{post.actionDisabled ? 'disabled' : ''}}" disabled="{{post.actionDisabled || operating}}" loading="{{operating}}" bindtap="claim">{{post.actionDisabled ? post.actionButtonLabel : action}}</button><view wx:if="{{post.isOwner && post.status === 'active'}}" class="owner-actions"><button class="primary" loading="{{operating}}" disabled="{{operating}}" bindtap="complete">标记完成</button><button class="danger-link" disabled="{{operating}}" bindtap="remove">删除这个单</button></view></view><view class="empty" wx:else>{{loading ? '正在加载…' : '这个单不存在'}}</view><view class="nav"><navigator class="nav-item" url="/pages/index/index" open-type="reLaunch"><text class="nav-icon nav-home"></text><text>首页</text></navigator><navigator class="nav-add" url="/pages/publish/publish">＋</navigator><navigator class="nav-item" url="/pages/profile/profile"><text class="nav-icon nav-profile"></text><text>我的</text></navigator></view></view>
+<import src="../../templates/board.wxml"/>
+<view class="page detail-page">
+  <block wx:if="{{post}}">
+    <view class="board-section detail-summary">
+      <view class="summary-top"><view class="category-heading"><view class="summary-icon"><image src="{{post.categoryIcon}}" mode="aspectFit"/></view><text class="board-tag {{post.isGoods ? 'warm' : ''}}">{{post.category}}</text></view><text class="board-state {{post.stateTone}}">{{post.stateLabel}}</text></view>
+      <text class="detail-title">{{post.title || post.subcategory}}</text>
+      <view class="summary-bottom"><text class="detail-price" wx:if="{{post.priceLabel}}">{{post.priceLabel}}</text><text class="summary-owner">{{post.ownerName || '校园同学'}} 发布</text><text class="summary-count" wx:if="{{post.countText}}">{{post.countText}}</text></view>
+    </view>
+    <view class="board-section" wx:if="{{post.status !== 'cancelled'}}">
+      <view class="board-section-head"><view class="section-heading"><text class="section-mark bar"></text><text class="board-section-title">互助进度</text></view></view>
+      <view class="progress-track"><view class="progress-node {{progressStep >= 0 ? 'reached' : ''}}"><text class="progress-dot">1</text><text>已公开</text></view><view class="progress-line {{progressStep >= 1 ? 'reached' : ''}}"></view><view class="progress-node {{progressStep >= 1 ? 'reached' : ''}}"><text class="progress-dot">2</text><text>参与交接</text></view><view class="progress-line {{progressStep >= 2 ? 'reached' : ''}}"></view><view class="progress-node {{progressStep >= 2 ? 'reached' : ''}}"><text class="progress-dot">3</text><text>已结束</text></view></view>
+    </view>
+    <view class="board-section">
+      <view class="board-section-head"><view class="section-heading"><text class="section-mark clock"></text><text class="board-section-title">{{post.isCarpool ? '行程信息' : '交接信息'}}</text></view></view>
+      <view class="info-line" wx:if="{{post.subcategory}}"><text>具体项目</text><text>{{post.subcategory}}</text></view>
+      <view class="info-line"><text>{{post.isCarpool ? '集合地点' : '地点'}}</text><text>{{post.placeLabel}}</text></view>
+      <view class="info-line"><text>{{post.isCarpool ? '出发时间' : '时间'}}</text><text>{{post.time || '待沟通'}}</text></view>
+      <view class="info-line" wx:if="{{post.isCarpool}}"><text>搭子性别</text><text>{{post.extra.gender || '不限性别'}}</text></view>
+      <view class="info-line" wx:if="{{post.isFreeGive}}"><text>剩余数量</text><text>{{post.availableQuantity}} / {{post.quantity}} 份</text></view>
+    </view>
+    <view class="board-section" wx:if="{{post.detail || post.images.length}}">
+      <view class="board-section-head"><view class="section-heading"><text class="section-mark bar"></text><text class="board-section-title">补充信息</text></view></view>
+      <text class="detail-body" wx:if="{{post.detail}}">{{post.detail}}</text>
+      <view class="detail-images" wx:if="{{post.images.length}}"><block wx:for="{{post.images}}" wx:key="*this"><image src="{{item}}" mode="aspectFill" data-index="{{index}}" bindtap="previewImage"/></block></view>
+    </view>
+    <view class="board-section contact-panel" wx:if="{{!post.isCarpool && (post.isOwner || post.claimedByMe)}}">
+      <view class="board-section-head"><view class="section-heading"><text class="section-mark bar"></text><text class="board-section-title">联系发布者</text></view><button wx:if="{{post.contact}}" class="text-link" bindtap="copyContact">复制</button></view>
+      <text class="contact-value">{{post.contact || '发布者尚未填写联系方式'}}</text>
+    </view>
+    <view class="board-section contact-panel" wx:if="{{post.isCarpool && (post.isOwner || post.claimedByMe) && post.extra.contactQr}}">
+      <view class="board-section-head"><view class="section-heading"><text class="section-mark bar"></text><text class="board-section-title">行程联系入口</text></view><button class="text-link" bindtap="previewQr">查看</button></view>
+      <text class="contact-value">{{post.participantLimit === 1 ? '微信加好友码' : '临时微信群二维码'}} · 仅本次行程可见</text>
+      <image class="contact-qr" src="{{post.extra.contactQr}}" mode="aspectFit" bindtap="previewQr"/>
+    </view>
+    <view class="detail-actions">
+      <button wx:if="{{!post.isOwner && !post.claimedByMe && post.status === 'active'}}" class="primary" disabled="{{post.actionDisabled || operating}}" loading="{{operating}}" bindtap="claim">{{post.actionButtonLabel}}</button>
+      <button wx:if="{{post.claimedByMe && post.status !== 'completed' && post.status !== 'cancelled'}}" class="secondary" disabled="{{operating}}" bindtap="cancelClaim">取消参与</button>
+      <block wx:if="{{post.isOwner && (post.status === 'active' || post.status === 'matched')}}">
+        <view class="owner-buttons"><button wx:if="{{!post.isCarpool && post.claimed}}" class="secondary" disabled="{{operating}}" bindtap="reopen">重新开放</button><button wx:if="{{post.isCarpool}}" class="secondary" disabled="{{operating}}" bindtap="close">手动结单</button><button wx:if="{{post.isCarpool}}" class="secondary" disabled="{{operating}}" bindtap="edit">修改行程</button><button wx:if="{{!post.isCarpool}}" class="primary" loading="{{operating}}" disabled="{{operating}}" bindtap="complete">结束本次互助</button></view>
+        <button class="danger-link" disabled="{{operating}}" bindtap="remove">{{post.isCarpool ? '取消本次行程' : '删除这条信息'}}</button>
+      </block>
+    </view>
+  </block>
+  <view class="empty-panel" wx:else><text class="empty-title">{{loading ? '正在加载…' : error}}</text><button wx:if="{{!loading}}" class="text-link" bindtap="retry">重新加载</button></view>
+  <template is="bottom-nav" data="{{active: ''}}"/>
+</view>

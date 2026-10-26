@@ -1,0 +1,51 @@
+<view class="fs-trigger {{disabled ? 'is-disabled' : ''}} {{opened ? 'is-open' : ''}}" bindtap="open" aria-role="button" aria-label="{{label || placeholder}}" aria-expanded="{{opened}}" aria-disabled="{{disabled}}">
+  <text class="fs-value {{value ? '' : 'is-placeholder'}}">{{value ? value + suffix : placeholder}}</text>
+  <view class="fs-chevron"></view>
+</view>
+
+<block wx:if="{{opened}}">
+  <view class="fs-backdrop" catchtap="close"></view>
+  <view class="fs-panel {{opensUp ? 'opens-up' : ''}}" style="{{panelStyle}}" catchtap="noop" catchtouchmove="noop">
+    <scroll-view wx:if="{{mode === 'selector'}}" class="fs-option-list" scroll-y="{{true}}" style="height:{{listHeight}}px;" enhanced="{{true}}" show-scrollbar="{{false}}">
+      <view wx:for="{{options}}" wx:key="*this" class="fs-option {{value === item ? 'is-selected' : ''}}" data-index="{{index}}" bindtap="chooseOption" aria-role="button" aria-label="{{item + suffix}}">
+        <text class="fs-option-text">{{item}}{{suffix}}</text>
+      </view>
+      <view wx:if="{{!options.length}}" class="fs-no-options">暂无可选项</view>
+    </scroll-view>
+
+    <view wx:elif="{{mode === 'date'}}" class="fs-layout" style="height:{{listHeight}}px;">
+    <scroll-view class="fs-content-scroll" scroll-y="{{true}}" style="height:{{bodyHeight}}px;" enhanced="{{true}}" show-scrollbar="{{false}}">
+    <view class="fs-calendar">
+      <view class="fs-calendar-head">
+        <button class="fs-month-arrow {{prevDisabled ? 'is-unavailable' : ''}}" bindtap="previousMonth" disabled="{{prevDisabled}}" aria-label="上个月">‹</button>
+        <text class="fs-month-title">{{monthTitle}}</text>
+        <button class="fs-month-arrow {{nextDisabled ? 'is-unavailable' : ''}}" bindtap="nextMonth" disabled="{{nextDisabled}}" aria-label="下个月">›</button>
+      </view>
+      <view class="fs-weekdays"><text wx:for="{{weekdays}}" wx:key="*this">{{item}}</text></view>
+      <view class="fs-days">
+        <view wx:for="{{days}}" wx:key="id" class="fs-day {{item.disabled ? 'is-unavailable' : ''}} {{item.selected ? 'is-selected' : ''}} {{item.today ? 'is-today' : ''}}" data-value="{{item.value}}" bindtap="chooseDate"><text>{{item.day}}</text></view>
+      </view>
+    </view>
+    </scroll-view>
+      <view class="fs-footer fs-fixed-footer"><button class="fs-cancel" bindtap="close">取消</button><button class="fs-confirm" bindtap="confirm">确定</button></view>
+    </view>
+
+    <view wx:elif="{{mode === 'time'}}" class="fs-layout" style="height:{{listHeight}}px;">
+    <scroll-view class="fs-content-scroll" scroll-y="{{true}}" style="height:{{bodyHeight}}px;" enhanced="{{true}}" show-scrollbar="{{false}}">
+    <view class="fs-time">
+      <view class="fs-time-head"><text>选择出发时间</text><text class="fs-time-summary">{{timeSummary}}</text></view>
+      <view class="fs-time-labels"><text>时</text><text>分</text></view>
+      <view class="fs-time-columns">
+        <scroll-view class="fs-time-column" scroll-y="{{true}}" scroll-into-view="{{hourAnchor}}" style="height:{{timeColumnHeight}}px;" enhanced="{{true}}" show-scrollbar="{{false}}">
+          <view wx:for="{{hours}}" wx:key="value" id="fs-hour-{{item.value}}" class="fs-time-option {{item.selected ? 'is-selected' : ''}}" data-value="{{item.value}}" bindtap="chooseHour"><text>{{item.label}}</text></view>
+        </scroll-view>
+        <scroll-view class="fs-time-column" scroll-y="{{true}}" scroll-into-view="{{minuteAnchor}}" style="height:{{timeColumnHeight}}px;" enhanced="{{true}}" show-scrollbar="{{false}}">
+          <view wx:for="{{minutes}}" wx:key="value" id="fs-minute-{{item.value}}" class="fs-time-option {{item.selected ? 'is-selected' : ''}}" data-value="{{item.value}}" bindtap="chooseMinute"><text>{{item.label}}</text></view>
+        </scroll-view>
+      </view>
+    </view>
+    </scroll-view>
+      <view class="fs-footer fs-fixed-footer"><button class="fs-cancel" bindtap="close">取消</button><button class="fs-confirm" bindtap="confirm">确定</button></view>
+    </view>
+  </view>
+</block>

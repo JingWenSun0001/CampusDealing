@@ -1,1 +1,6 @@
-{"navigationBarTitleText":"发布"}
+{
+  "navigationBarTitleText": "发布",
+  "usingComponents": {
+    "floating-select": "/components/floating-select/floating-select"
+  }
+}

@@ -9,9 +9,9 @@
   ],
   "window": {
     "navigationBarTitleText": "河小易",
-    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarBackgroundColor": "#f4f1eb",
     "navigationBarTextStyle": "black",
-    "backgroundColor": "#f5f5f7",
+    "backgroundColor": "#f4f1eb",
     "backgroundTextStyle": "light"
   },
   "style": "v2",

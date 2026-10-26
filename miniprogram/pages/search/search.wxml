@@ -1,6 +1,16 @@
+<import src="../../templates/board.wxml"/>
 <view class="page search-page">
-  <view class="search-head"><button class="search-back" bindtap="back">‹</button><view class="search-entry"><text class="search-icon">⌕</text><input focus="{{!searched}}" value="{{keyword}}" placeholder="搜物品、地点或关键词" confirm-type="search" bindinput="inputChange" bindconfirm="submit"/><text wx:if="{{keyword}}" class="search-clear" bindtap="clearSearch">×</text></view></view>
-  <view class="history-panel" wx:if="{{!searched && !keyword}}"><view class="history-head"><text>历史搜索</text><button class="history-trash" wx:if="{{history.length}}" bindtap="clearHistory">🗑️</button></view><view class="history-list" wx:if="{{history.length}}"><block wx:for="{{history}}" wx:key="*this"><button class="history-item" data-keyword="{{item}}" bindtap="useHistory">{{item}}</button></block></view><text class="history-empty" wx:else>暂无搜索记录</text></view>
-  <view class="search-result-head" wx:if="{{searched}}"><text>搜索结果</text><text>{{posts.length}} 条</text></view>
-  <view class="task-list search-results"><block wx:for="{{posts}}" wx:key="id"><view class="task" data-id="{{item.id}}" bindtap="openDetail"><view class="task-top"><text class="badge {{item.intent === 'offer' ? 'offer' : ''}}">{{item.intent === 'offer' ? '可提供' : '求帮助'}}</text><text class="task-category">{{item.category}}</text></view><text class="task-title">{{item.title || item.subcategory || item.category}}</text><text class="route">⌖ {{item.place || '校内交接'}}</text><view class="meta"><text>◷ {{item.time || '时间待定'}}</text><text>{{item.subcategory || item.category}}</text></view><button class="task-action {{item.actionDisabled ? 'disabled' : ''}}" disabled="{{item.actionDisabled || pendingClaimId !== null}}" loading="{{pendingClaimId === item.id}}" catchtap="claim" data-id="{{item.id}}">{{pendingClaimId === item.id ? '处理中' : item.actionButtonLabel}}</button></view></block><view class="empty" wx:if="{{searched && !loading && !posts.length}}">没有找到相关内容，换个关键词试试</view><view class="empty" wx:if="{{loading}}">正在搜索…</view></view>
+  <view class="search-head"><view class="search-entry"><text class="magnifier"></text><input focus="{{!searched}}" value="{{keyword}}" placeholder="搜索互助、地点或好物" confirm-type="search" bindinput="inputChange" bindconfirm="submit"/><button wx:if="{{keyword}}" class="search-clear" bindtap="clearSearch" aria-label="清空搜索">×</button></view><button class="search-submit" bindtap="submit">搜索</button></view>
+  <view class="board-section" wx:if="{{!searched}}">
+    <view class="board-section-head"><view class="section-heading"><text class="section-mark bar"></text><text class="board-section-title">历史搜索</text></view><button class="section-more" wx:if="{{history.length}}" bindtap="clearHistory">清空</button></view>
+    <view class="history-list"><block wx:for="{{history}}" wx:key="*this"><button class="history-item" data-keyword="{{item}}" bindtap="useHistory">{{item}}</button></block><text class="section-empty" wx:if="{{!history.length}}">暂无搜索记录</text></view>
+  </view>
+  <view class="board-section" wx:else>
+    <view class="board-section-head"><view class="section-heading"><text class="section-mark bar"></text><text class="board-section-title">{{title === '搜索' ? '搜索结果' : title}}</text></view><text class="section-total">{{posts.length}} 条</text></view>
+    <view class="inline-error" wx:if="{{error}}" bindtap="retry">{{error}} ↻</view>
+    <view class="board-list"><block wx:for="{{posts}}" wx:key="id"><template is="post-row" data="{{post: item}}"/></block></view>
+    <view class="section-empty" wx:if="{{loading}}">正在查找…</view>
+    <view class="section-empty" wx:if="{{!loading && !error && !posts.length}}">没有找到相关内容</view>
+  </view>
+  <template is="bottom-nav" data="{{active: ''}}"/>
 </view>
