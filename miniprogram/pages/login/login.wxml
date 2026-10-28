@@ -1,0 +1,10 @@
+<view class="page login-page">
+  <view class="login-card">
+    <view class="login-mark">河</view>
+    <text class="login-title">登录河小易</text>
+    <text class="login-copy">登录后即可发布互助、参与行程和管理个人资料</text>
+    <button class="primary login-button" loading="{{loading}}" disabled="{{loading}}" bindtap="authorize">微信授权登录</button>
+    <button class="login-cancel" disabled="{{loading}}" bindtap="cancel">暂不登录</button>
+    <text class="login-error" wx:if="{{error}}">{{error}}</text>
+  </view>
+</view>

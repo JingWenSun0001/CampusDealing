@@ -2,12 +2,17 @@
 <view class="page edit-page">
   <view class="board-section form-panel" wx:if="{{!loading}}">
     <view class="board-section-head"><view class="section-heading"><text class="section-mark bar"></text><text class="board-section-title">基本资料</text></view></view>
-    <view class="form-item"><text class="label">姓名或昵称</text><input class="field" maxlength="20" placeholder="你的校园称呼" value="{{form.name}}" data-key="name" bindinput="inputChange"/></view>
-    <view class="form-item"><text class="label">学号 <text class="optional">选填 · 仅自己可见</text></text><input class="field" maxlength="24" placeholder="填写学号" value="{{form.studentId}}" data-key="studentId" bindinput="inputChange"/></view>
+    <view class="form-item"><text class="label">昵称</text><input class="field" maxlength="20" value="{{form.name}}" data-key="name" bindinput="inputChange"/></view>
+    <view class="form-item"><text class="label">学号 <text class="optional">仅自己可见</text></text><input class="field" maxlength="24" value="{{form.studentId}}" data-key="studentId" bindinput="inputChange"/></view>
   </view>
   <view class="board-section form-panel" wx:if="{{!loading}}">
     <view class="board-section-head"><view class="section-heading"><text class="section-mark clock"></text><text class="board-section-title">交接地点</text></view></view>
-    <view class="row"><view class="form-item"><text class="label">宿舍楼 <text class="optional">选填</text></text><input class="field" maxlength="20" placeholder="例如：3号楼" value="{{form.building}}" data-key="building" bindinput="inputChange"/></view><view class="form-item"><text class="label">房间 <text class="optional">选填</text></text><input class="field" maxlength="12" placeholder="例如：521" value="{{form.room}}" data-key="room" bindinput="inputChange"/></view></view>
+    <view class="row"><view class="form-item"><text class="label">宿舍楼</text><floating-select id="select-building" label="宿舍楼" options="{{buildingOptions}}" value="{{form.building}}" placeholder="请选择" bind:change="buildingChange"/></view><view class="form-item"><text class="label">宿舍号</text><input class="field" type="number" maxlength="3" placeholder="例如：521" value="{{form.room}}" data-key="room" bindinput="inputChange"/></view></view>
+  </view>
+  <view class="board-section form-panel" wx:if="{{!loading}}">
+    <view class="board-section-head"><view class="section-heading"><text class="section-mark bar"></text><text class="board-section-title">默认联系码 <text class="required-mark">必填</text></text></view></view>
+    <text class="privacy-note" wx:if="{{!qrPreview}}">上传一次微信好友二维码，后续互助统一使用此好友码。</text>
+    <view class="qr-upload"><image wx:if="{{qrPreview}}" class="qr-preview" src="{{qrPreview}}" mode="aspectFit"/><button wx:if="{{qrPreview}}" class="image-remove" bindtap="removeContactQr" aria-label="移除好友码">×</button><button wx:else class="image-add qr-add" bindtap="chooseContactQr"><text>＋</text><text>上传好友码</text></button></view>
   </view>
   <text class="error" wx:if="{{error}}">{{error}}</text>
   <button class="primary" wx:if="{{!loading}}" loading="{{saving}}" disabled="{{saving}}" bindtap="save">{{saving ? '正在保存…' : '保存资料'}}</button>

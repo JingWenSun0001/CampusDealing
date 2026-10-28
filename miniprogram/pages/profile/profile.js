@@ -1,8 +1,10 @@
 const api = require('../../utils/api');
 const { normalizePost } = require('../../utils/post');
+const { promptReport } = require('../../utils/report');
+const { requireLogin } = require('../../utils/auth');
 Page({
-  data: { profile: {}, stats: { published: 0, joined: 0, completed: 0 }, activeTab: 'published', list: [], mine: [], joined: [], notifications: [], avatar: '/assets/river-easy-avatar.png', loading: true, error: '', listTitle: '我发布的' },
-  onLoad() { this.load(); },
+  data: { profile: {}, stats: { published: 0, joined: 0, completed: 0 }, activeTab: 'published', list: [], mine: [], joined: [], notifications: [], avatar: '', loading: true, error: '', listTitle: '我发布的' },
+  onLoad() { if (requireLogin('/pages/profile/profile')) this.load(); },
   onShow() { if (this.loadedOnce) this.load(); else this.loadedOnce = true; },
   load() {
     const requestId = this.requestId = (this.requestId || 0) + 1;
@@ -10,7 +12,7 @@ Page({
     const notificationsRequest = api.getNotifications ? api.getNotifications() : Promise.resolve([]);
     return Promise.all([api.getMe(), api.getPosts({ mine: 1 }), api.getPosts({ joined: 1 }), notificationsRequest]).then(([profile, mine, joined, notifications]) => {
       if (requestId !== this.requestId) return;
-      this.setData({ profile, mine: mine.map(normalizePost), joined: joined.map(normalizePost), notifications: (notifications || []).slice(0, 3), avatar: wx.getStorageSync('profileAvatar') || profile.avatar || '/assets/river-easy-avatar.png', loading: false }, () => this.updateList());
+      this.setData({ profile, mine: mine.map(normalizePost), joined: joined.map(normalizePost), notifications: (notifications || []).slice(0, 3), avatar: profile.avatar || '', loading: false }, () => this.updateList());
     }).catch(() => { if (requestId === this.requestId) this.setData({ loading: false, error: '加载失败，点击重试' }); });
   },
   updateList() {
@@ -32,12 +34,11 @@ Page({
     api.markNotificationRead(id).then(() => this.setData({ notifications: this.data.notifications.map(item => item.id === id ? { ...item, readAt: Date.now() } : item) }));
   },
   openDetail(e) { wx.navigateTo({ url: '/pages/detail/detail?id=' + encodeURIComponent(e.currentTarget.dataset.id) }); },
-  chooseAvatar() {
-    wx.chooseMedia({ count: 1, mediaType: ['image'], sourceType: ['album', 'camera'], success: res => wx.saveFile({
-      tempFilePath: res.tempFiles[0].tempFilePath,
-      success: saved => { wx.setStorageSync('profileAvatar', saved.savedFilePath); this.setData({ avatar: saved.savedFilePath }); },
-      fail: () => wx.showToast({ title: '头像保存失败', icon: 'none' })
-    }) });
-  },
-  editProfile() { wx.navigateTo({ url: '/pages/profile-edit/profile-edit' }); }
+  openAvatar() { wx.navigateTo({ url: '/pages/avatar/avatar' }); },
+  editProfile() { wx.navigateTo({ url: '/pages/profile-edit/profile-edit' }); },
+  report(e) {
+    const id = Number(e.currentTarget.dataset.id);
+    const post = this.data.list.find(item => Number(item.id) === id);
+    promptReport(id, Boolean(post?.isOwner));
+  }
 });

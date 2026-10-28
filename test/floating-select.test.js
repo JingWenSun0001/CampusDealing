@@ -156,6 +156,12 @@ test('选择器只用高亮表示选中且人数不显示单位', () => {
   assert.doesNotMatch(publish, /suffix=" 人"/);
 });
 
+test('其他选项可显示调用方提供的辅助说明', () => {
+  const markup = fs.readFileSync(path.join(path.dirname(file), 'floating-select.wxml'), 'utf8');
+  assert.match(markup, /otherHint/);
+  assert.match(markup, /fs-option-hint/);
+});
+
 test('取消日期或时间不会提交，重新打开恢复已保存的值', () => {
   for (const mode of ['date', 'time']) {
     const value = mode === 'date' ? '2028-03-10' : '16:20';

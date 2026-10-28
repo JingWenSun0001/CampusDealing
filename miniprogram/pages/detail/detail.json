@@ -1,1 +1,6 @@
-{"navigationBarTitleText":"互助详情"}
+{
+  "navigationBarTitleText": "互助详情",
+  "usingComponents": {
+    "floating-select": "/components/floating-select/floating-select"
+  }
+}

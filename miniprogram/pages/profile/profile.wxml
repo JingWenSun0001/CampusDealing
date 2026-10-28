@@ -1,8 +1,8 @@
 <import src="../../templates/board.wxml"/>
 <view class="page profile-page">
   <view class="identity-card">
-    <button class="avatar" bindtap="chooseAvatar" aria-label="更换头像"><image src="{{avatar}}" mode="aspectFill"/></button>
-    <view class="identity-main"><text class="profile-name">{{profile.name || '新同学'}}</text><text class="profile-meta">{{profile.building || '未填写宿舍'}}<text wx:if="{{profile.room}}"> · {{profile.room}}室</text></text></view>
+    <button class="avatar" bindtap="openAvatar" aria-label="查看头像"><image wx:if="{{avatar}}" src="{{avatar}}" mode="aspectFill"/><view wx:else class="avatar-placeholder">头像</view></button>
+    <view class="identity-main" bindtap="editProfile" aria-role="button" aria-label="编辑资料"><text class="profile-name">{{profile.name || '新同学'}}</text><text class="profile-meta">{{profile.building || '未填写宿舍'}}<text wx:if="{{profile.room}}"> · {{profile.room}}室</text></text></view>
     <button class="edit-profile" bindtap="editProfile">编辑 <text>›</text></button>
   </view>
   <view class="notice-list" wx:if="{{notifications.length}}">

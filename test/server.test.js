@@ -10,12 +10,13 @@ const root = path.resolve(__dirname, '..');
 const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'river-easy-test-'));
 let child;
 let baseUrl;
+const validPng = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/9XbEJwAAAABJRU5ErkJggg==';
 
 function startServer() {
   return new Promise((resolve, reject) => {
     child = spawn(process.execPath, ['server.js'], {
       cwd: root,
-      env: { ...process.env, PORT: '0', HOST: '127.0.0.1', DATA_DIR: dataDir, NODE_ENV: 'test' },
+      env: { ...process.env, PORT: '0', HOST: '127.0.0.1', DATA_DIR: dataDir, NODE_ENV: 'test', MODERATION_ADMIN_KEY: 'test-moderation-key' },
       stdio: ['ignore', 'pipe', 'pipe']
     });
     let output = '';
@@ -76,6 +77,19 @@ test('后端健康检查和完整任务流程', async t => {
     assert.equal(result.body.environment, 'test');
   });
 
+  await t.test('微信登录 code 换取会话并复用用户身份', async () => {
+    const login = await request('/auth/wechat', {
+      method: 'POST',
+      body: JSON.stringify({ code: 'test-wechat-code', userInfo: { nickName: '微信同学' } })
+    });
+    assert.equal(login.status, 200);
+    assert.match(login.body.token, /^[A-Za-z0-9_-]{32,128}$/);
+    assert.equal(login.body.user.name, '微信同学');
+    const profile = await request('/profile', { headers: { authorization: 'Bearer ' + login.body.token } });
+    assert.equal(profile.status, 200);
+    assert.equal(profile.body.id, login.body.user.id);
+  });
+
   let seededPost;
   await t.test('读取首页种子数据', async () => {
     const result = await request('/posts');
@@ -96,6 +110,82 @@ test('后端健康检查和完整任务流程', async t => {
   await t.test('拒绝无效发布', async () => {
     const result = await request('/posts', { method: 'POST', body: JSON.stringify({ title: '缺少字段' }) });
     assert.equal(result.status, 400);
+  });
+
+  await t.test('本地审核规则拦截敏感文本、异常价格与多人举报', async () => {
+    const banned = await request('/posts', { method: 'POST', body: JSON.stringify({ category: '服务', subcategory: '其他', intent: 'offer', title: '校园刷 单服务' }) });
+    assert.equal(banned.status, 400);
+    assert.equal(banned.body.error, '标题包含不支持发布的信息');
+    const price = await request('/posts', { method: 'POST', body: JSON.stringify({ category: '二手好物', subcategory: '教材', intent: 'offer', title: '高价教材', price: '10000' }) });
+    assert.equal(price.status, 400);
+    assert.equal(price.body.error, '价格不能超过9999.99元');
+
+    const owner = { 'x-user-id': 'moderation-owner' };
+    const created = await request('/posts', { method: 'POST', headers: owner, body: JSON.stringify({ category: '服务', subcategory: '摄影', intent: 'offer', title: '举报审核测试' }) });
+    assert.equal(created.status, 201);
+    const reporters = ['moderation-user-a', 'moderation-user-b', 'moderation-user-c'];
+    for (const reporter of reporters) {
+      const report = await request('/posts/' + created.body.id + '/reports', { method: 'POST', headers: { 'x-user-id': reporter }, body: JSON.stringify({ reason: '虚假信息' }) });
+      assert.equal(report.status, 201);
+    }
+    assert.equal((await request('/posts/' + created.body.id, { headers: { 'x-user-id': 'moderation-outsider' } })).status, 404);
+    assert.equal((await request('/posts/' + created.body.id, { headers: owner })).body.status, 'hidden');
+    const reports = await request('/moderation/reports', { headers: { 'x-admin-key': 'test-moderation-key' } });
+    assert.equal(reports.status, 200);
+    const related = reports.body.filter(item => item.postId === created.body.id);
+    assert.equal(related.length, 3);
+    for (const report of related) {
+      const dismissed = await request('/moderation/reports/' + report.id, { method: 'PUT', headers: { 'x-admin-key': 'test-moderation-key' }, body: JSON.stringify({ decision: 'dismiss' }) });
+      assert.equal(dismissed.status, 200);
+    }
+    assert.equal((await request('/posts/' + created.body.id, { headers: { 'x-user-id': 'moderation-outsider' } })).body.status, 'active');
+  });
+
+  await t.test('其他拼车目的地必须填写具体名称', async () => {
+    const payload = { category: '拼车搭子', subcategory: '其他', intent: 'seek', title: '去其他地点', place: '西门', time: '18:30', extra: { people: '1', departureAt: Date.now() + 60 * 60 * 1000, contactQr: validPng } };
+    const invalid = await request('/posts', { method: 'POST', body: JSON.stringify(payload) });
+    assert.equal(invalid.status, 400);
+    assert.equal(invalid.body.error, '请填写具体目的地');
+    payload.extra.destination = '郑州东站';
+    const valid = await request('/posts', { method: 'POST', body: JSON.stringify(payload) });
+    assert.equal(valid.status, 201);
+    const detail = await request('/posts/' + valid.body.id);
+    assert.equal(detail.body.extra.destination, '郑州东站');
+  });
+
+  await t.test('其他出租物品必须填写具体名称', async () => {
+    const payload = { category: '出租', subcategory: '其他', intent: 'offer', title: '其他出租物品', extra: {} };
+    const invalid = await request('/posts', { method: 'POST', body: JSON.stringify(payload) });
+    assert.equal(invalid.status, 400);
+    assert.equal(invalid.body.error, '请填写具体出租什么');
+    payload.extra.rentalItem = '露营帐篷';
+    const valid = await request('/posts', { method: 'POST', body: JSON.stringify(payload) });
+    assert.equal(valid.status, 201);
+    const detail = await request('/posts/' + valid.body.id);
+    assert.equal(detail.body.extra.rentalItem, '露营帐篷');
+  });
+
+  await t.test('其他代购地点必须填写具体名称', async () => {
+    const payload = { category: '代购', subcategory: '其他', intent: 'seek', title: '其他地点代购', extra: {} };
+    const invalid = await request('/posts', { method: 'POST', body: JSON.stringify(payload) });
+    assert.equal(invalid.status, 400);
+    assert.equal(invalid.body.error, '请填写具体代购地点或店名');
+    payload.extra.shoppingPlace = '校外水果店';
+    const valid = await request('/posts', { method: 'POST', body: JSON.stringify(payload) });
+    assert.equal(valid.status, 201);
+    const detail = await request('/posts/' + valid.body.id);
+    assert.equal(detail.body.extra.shoppingPlace, '校外水果店');
+  });
+
+  await t.test('二手好物价格必填，零元归入免费送', async () => {
+    const missingPrice = await request('/posts', { method: 'POST', body: JSON.stringify({ category: '二手好物', subcategory: '教材', intent: 'offer', title: '二手教材' }) });
+    assert.equal(missingPrice.status, 400);
+    assert.equal(missingPrice.body.error, '请填写价格');
+    const zeroPrice = await request('/posts', { method: 'POST', body: JSON.stringify({ category: '二手好物', subcategory: '教材', intent: 'offer', title: '免费教材', price: '0' }) });
+    assert.equal(zeroPrice.status, 201);
+    const detail = await request('/posts/' + zeroPrice.body.id);
+    assert.equal(detail.body.category, '免费送');
+    assert.equal(detail.body.quantity, 1);
   });
 
   let ownPostId;
@@ -142,9 +232,13 @@ test('后端健康检查和完整任务流程', async t => {
   });
 
   await t.test('保存个人资料并更新统计', async () => {
-    const updated = await request('/profile', { method: 'PUT', body: JSON.stringify({ name: '河小易测试员', studentId: '20260001', building: '3号楼', room: '521' }) });
+    const missingRequired = await request('/profile', { method: 'PUT', body: JSON.stringify({ name: '河小易测试员', studentId: '20260001' }) });
+    assert.equal(missingRequired.status, 400);
+    assert.equal(missingRequired.body.error, '请选择1到9号宿舍楼');
+    const updated = await request('/profile', { method: 'PUT', body: JSON.stringify({ name: '河小易测试员', studentId: '20260001', building: '3号楼', room: '521', contactQr: validPng }) });
     assert.equal(updated.status, 200);
     assert.equal(updated.body.name, '河小易测试员');
+    assert.equal(updated.body.contactQr, validPng);
     const me = await request('/me');
     assert.ok(me.body.stats.published >= 1);
     assert.ok(me.body.stats.joined >= 1);
@@ -154,6 +248,8 @@ test('后端健康检查和完整任务流程', async t => {
     const userA = { 'x-user-id': 'device-user-a' };
     const userB = { 'x-user-id': 'device-user-b' };
     const userC = { 'x-user-id': 'device-user-c' };
+    const profile = await request('/profile', { method: 'PUT', headers: userA, body: JSON.stringify({ name: '甲同学', studentId: '20260002', building: '1号楼', room: '101', contactQr: validPng }) });
+    assert.equal(profile.status, 200);
     const created = await request('/posts', {
       method: 'POST',
       headers: userA,
@@ -163,6 +259,7 @@ test('后端健康检查和完整任务流程', async t => {
     const viewedByB = await request('/posts/' + created.body.id, { headers: userB });
     assert.equal(viewedByB.body.isOwner, false);
     assert.equal(viewedByB.body.contact, '');
+    assert.equal(viewedByB.body.contactQr, '');
     const claimedByB = await request('/posts/' + created.body.id + '/claim', { method: 'POST', headers: userB });
     assert.equal(claimedByB.status, 200);
     assert.equal(claimedByB.body.status, 'matched');
@@ -174,6 +271,7 @@ test('后端健康检查和完整任务流程', async t => {
     assert.equal(detailA.body.claimedByMe, false);
     assert.equal(detailB.body.claimedByMe, true);
     assert.equal(detailB.body.contact, 'wx-a');
+    assert.equal(detailB.body.contactQr, validPng);
     assert.equal(detailC.status, 404);
     const forbidden = await request('/posts/' + created.body.id + '/complete', { method: 'POST', headers: userB });
     assert.equal(forbidden.status, 403);
@@ -196,7 +294,7 @@ test('后端健康检查和完整任务流程', async t => {
     const created = await request('/posts', {
       method: 'POST',
       headers: owner,
-      body: JSON.stringify({ category: '拼车搭子', subcategory: '新乡东', intent: 'seek', title: '两人同行测试', place: '东门', time: '18:30', extra: { people: '2', gender: '不限', departureAt: Date.now() + 60 * 60 * 1000, contactQr: 'data:image/png;base64,YQ==' } })
+      body: JSON.stringify({ category: '拼车搭子', subcategory: '新乡东', intent: 'seek', title: '两人同行测试', place: '东门', time: '18:30', extra: { people: '2', gender: '不限', departureAt: Date.now() + 60 * 60 * 1000, contactQr: validPng } })
     });
     const first = await request('/posts/' + created.body.id + '/claim', { method: 'POST', headers: userA });
     assert.equal(first.body.status, 'active');
@@ -214,7 +312,7 @@ test('后端健康检查和完整任务流程', async t => {
     const reopened = await request('/posts?q=' + encodeURIComponent('两人同行测试'), { headers: outsider });
     assert.ok(reopened.body.some(post => post.id === created.body.id));
     assert.equal(reopened.body.find(post => post.id === created.body.id).extra.contactQr, undefined);
-    assert.equal((await request('/posts/' + created.body.id, { headers: userA })).body.extra.contactQr, 'data:image/png;base64,YQ==');
+    assert.equal((await request('/posts/' + created.body.id, { headers: userA })).body.extra.contactQr, validPng);
   });
 
   await t.test('拼车手动或提前十分钟自动结单后保留记录并锁定操作', async () => {
@@ -223,7 +321,7 @@ test('后端健康检查和完整任务流程', async t => {
     const outsider = { 'x-user-id': 'close-outsider' };
     for (const mode of ['manual', 'automatic']) {
       for (const people of [1, 3]) {
-        const payload = { category: '拼车搭子', subcategory: '新乡东', intent: 'seek', title: '拼车结单验证' + mode + people, place: '西门', time: '18:30', extra: { people, departureAt: Date.now() + 60 * 60 * 1000, contactQr: 'data:image/png;base64,YQ==' } };
+        const payload = { category: '拼车搭子', subcategory: '新乡东', intent: 'seek', title: '拼车结单验证' + mode + people, place: '西门', time: '18:30', extra: { people, departureAt: Date.now() + 60 * 60 * 1000, contactQr: validPng } };
         const created = await request('/posts', { method: 'POST', headers: owner, body: JSON.stringify(payload) });
         assert.equal(created.status, 201);
         const id = created.body.id;
@@ -247,7 +345,7 @@ test('后端健康检查和完整任务流程', async t => {
         assert.equal(detail.body.extra.contactQr, payload.extra.contactQr);
         assert.equal((await request('/posts/' + id + '/claim', { method: 'DELETE', headers: member })).status, 409);
         assert.equal((await request('/posts/' + id, { method: 'PUT', headers: owner, body: JSON.stringify({ place: '南门' }) })).status, 409);
-        assert.equal((await request('/posts/' + id, { method: 'DELETE', headers: owner })).status, 409);
+        assert.equal((await request('/posts/' + id, { method: 'DELETE', headers: owner })).status, 200);
         assert.equal((await request('/posts/' + id + '/reopen', { method: 'POST', headers: owner })).status, 409);
         assert.equal((await request('/posts/' + id, { headers: outsider })).status, 404);
         const publicList = await request('/posts?q=' + encodeURIComponent(payload.title), { headers: outsider });
@@ -255,7 +353,7 @@ test('后端健康检查和完整任务流程', async t => {
         const history = await request('/posts?joined=1', { headers: member });
         assert.ok(history.body.some(post => post.id === id));
         const notifications = await request('/notifications', { headers: member });
-        assert.equal(notifications.body.filter(item => item.postId === id).length, 1, '结单提醒只能发送一次');
+        assert.equal(notifications.body.filter(item => item.postId === id).length, 1, '已结束行程删除不重复提醒参与者');
       }
     }
   });

@@ -28,6 +28,7 @@ Component({
     end: { type: String, value: '23:55' },
     minuteStep: { type: Number, value: 1 },
     label: { type: String, value: '' },
+    otherHint: { type: String, value: '' },
     suffix: { type: String, value: '' }
   },
 

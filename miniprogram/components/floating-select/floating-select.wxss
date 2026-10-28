@@ -19,7 +19,10 @@ button::after { border:0; }
 .fs-option + .fs-option { border-top:1rpx solid rgba(151,165,185,.13); }
 .fs-option:active { background:#eaf1fb; }
 .fs-option.is-selected { background:#e8f1ff;color:#2478df; }
-.fs-option-text { flex:1;min-width:0;word-break:break-all; }
+.fs-option-copy { display:flex;align-items:center;gap:12rpx;min-width:0; }
+.fs-option-text { min-width:0;word-break:break-all; }
+.fs-option-hint { color:#96a2b3;font-size:20rpx;white-space:nowrap; }
+.fs-option.is-selected .fs-option-hint { color:#72a6e8; }
 .fs-no-options { padding:25rpx;text-align:center;color:#9aa6b5;font-size:24rpx; }
 .fs-calendar,.fs-time { padding:7rpx 12rpx 0; }
 .fs-calendar-head { display:flex;align-items:center;justify-content:space-between;height:72rpx; }

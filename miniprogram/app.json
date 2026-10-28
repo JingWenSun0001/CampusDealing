@@ -1,10 +1,12 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/login/login",
     "pages/search/search",
     "pages/detail/detail",
     "pages/publish/publish",
     "pages/profile/profile",
+    "pages/avatar/avatar",
     "pages/profile-edit/profile-edit"
   ],
   "window": {

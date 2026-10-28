@@ -2,12 +2,15 @@ const app = getApp();
 
 function request(path, options = {}) {
   return new Promise((resolve, reject) => {
+    const headers = { 'content-type': 'application/json' };
+    if (app.globalData.userId) headers['x-user-id'] = app.globalData.userId;
+    if (app.globalData.authToken) headers.authorization = 'Bearer ' + app.globalData.authToken;
     wx.request({
       url: (app.globalData.apiBase || '') + path,
       method: options.method || 'GET',
       data: options.data || {},
       timeout: 10000,
-      header: { 'content-type': 'application/json', 'x-user-id': app.globalData.userId || '' },
+      header: headers,
       success(res) {
         if (res.statusCode >= 200 && res.statusCode < 300) return resolve(res.data);
         const error = new Error((res.data && res.data.error) || '请求失败，请稍后重试');
@@ -20,6 +23,7 @@ function request(path, options = {}) {
 }
 
 module.exports = {
+  loginWithWechat(data) { return request('/auth/wechat', { method: 'POST', data }); },
   getPosts(params) {
     const query = Object.keys(params || {}).filter(k => params[k] !== '' && params[k] != null)
       .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k])).join('&');
@@ -34,6 +38,7 @@ module.exports = {
   completePost(id) { return request('/posts/' + encodeURIComponent(id) + '/complete', { method: 'POST', data: {} }); },
   updatePost(id, data) { return request('/posts/' + encodeURIComponent(id), { method: 'PUT', data }); },
   deletePost(id) { return request('/posts/' + encodeURIComponent(id), { method: 'DELETE' }); },
+  reportPost(id, data) { return request('/posts/' + encodeURIComponent(id) + '/reports', { method: 'POST', data }); },
   getNotifications() { return request('/notifications'); },
   markNotificationRead(id) { return request('/notifications/' + encodeURIComponent(id) + '/read', { method: 'POST', data: {} }); },
   getMe() { return request('/me'); },

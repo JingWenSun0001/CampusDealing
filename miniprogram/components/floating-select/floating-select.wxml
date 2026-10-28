@@ -8,7 +8,7 @@
   <view class="fs-panel {{opensUp ? 'opens-up' : ''}}" style="{{panelStyle}}" catchtap="noop" catchtouchmove="noop">
     <scroll-view wx:if="{{mode === 'selector'}}" class="fs-option-list" scroll-y="{{true}}" style="height:{{listHeight}}px;" enhanced="{{true}}" show-scrollbar="{{false}}">
       <view wx:for="{{options}}" wx:key="*this" class="fs-option {{value === item ? 'is-selected' : ''}}" data-index="{{index}}" bindtap="chooseOption" aria-role="button" aria-label="{{item + suffix}}">
-        <text class="fs-option-text">{{item}}{{suffix}}</text>
+        <view class="fs-option-copy"><text class="fs-option-text">{{item}}{{suffix}}</text><text wx:if="{{item === '其他' && otherHint}}" class="fs-option-hint">{{otherHint}}</text></view>
       </view>
       <view wx:if="{{!options.length}}" class="fs-no-options">暂无可选项</view>
     </scroll-view>

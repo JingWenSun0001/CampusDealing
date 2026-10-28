@@ -1,0 +1,5 @@
+<view class="avatar-page">
+  <image wx:if="{{avatar}}" class="avatar-full" src="{{avatar}}" mode="aspectFit"/>
+  <view wx:else class="avatar-empty">暂无微信头像</view>
+  <button class="avatar-change" loading="{{saving}}" disabled="{{saving || loading}}" bindtap="changeAvatar">{{saving ? '正在更换…' : '更换头像'}}</button>
+</view>
